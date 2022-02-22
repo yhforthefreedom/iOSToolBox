@@ -4,6 +4,7 @@ import os
 import random
 import tkinter as tk
 from tkinter import *
+from tkinter import ttk
 import threading
 import time
 from tkinter import filedialog
@@ -24,6 +25,7 @@ class APKTk:
         self.select_device_list = []
         self.device_list = self.get_device_list()
         self.cb_list = []
+        self.package_3 = self.show_package()
 
     @staticmethod
     def install_and_open(device_name, file_path):
@@ -111,7 +113,7 @@ class APKTk:
             if device_name in i:
                 pid = re.findall(r'(\d+)', i)[-1]
                 subprocess.call('taskkill /T /F /PID %s' % pid, shell=True)
-                print('日志导出服务停止！,请在D:/android_log查看')
+                print('日志导出服务停止！,请在D:/ios_log查看')
 
     @staticmethod
     def uninstall_all(device_name, package_name):
@@ -165,73 +167,119 @@ class APKTk:
         self.device_list = self.get_device_list()
         self.select_device_list = []
         self.mul_check_box()
+        self.package_3 = self.show_package()
+        self.combobox_list()
+        self.input_text()
+        self.path_button()
+        self.install_button()
+        self.launch_button()
+        self.refresh_button()
+        self.activity_button()
+        self.screenshot_button()
+        self.clear_button()
+        self.kill_button()
+        self.check_button()
+        self.export_button()
+        self.monkey_button()
+        self.uninstall_button()
+        self.close_pref_button()
+        self.close_output_button()
+
+    def show_package(self):
+        for i in self.device_list:
+            res = subprocess.check_output(f"tidevice --udid {i} applist")
+            packages = [i for i in res.decode('gbk').split('\n')[:-1]]
+            return packages
+
+    def combobox_list(self):
+        the_label = tk.Label(self.root)
+        self.cb_list.append(the_label)
+        the_label.grid(row=len(self.device_list) + 1, sticky='w')
+        comboxlist = ttk.Combobox(self.root, textvariable=self.package_name, state='readonly', values=self.package_3,
+                                  width=62)
+        self.cb_list.append(comboxlist)
+        comboxlist.grid(row=len(self.device_list) + 1, column=0)
 
     def path_button(self):
-        Button(self.root, text="选择文件", command=self.select_path).grid(row=len(self.device_list) + 2, column=1)
+        button_path = Button(self.root, text="选择文件", command=self.select_path)
+        button_path.grid(row=len(self.device_list), column=1)
+        self.cb_list.append(button_path)
 
     def install_button(self):
         button_install = Button(self.root, text="安装APP", command=self.install)
-        button_install.grid(row=len(self.device_list) + 2, column=2)
+        button_install.grid(row=len(self.device_list), column=2)
+        self.cb_list.append(button_install)
 
     def refresh_button(self):
-        button_install = Button(self.root, text="刷新设备", command=self.refresh_data)
-        button_install.grid(row=len(self.device_list) + 2, column=3)
+        button_refresh = Button(self.root, text="刷新设备", command=self.refresh_data)
+        button_refresh.grid(row=len(self.device_list), column=3)
+        self.cb_list.append(button_refresh)
 
     def activity_button(self):
-        Button(self.root, text="应用列表", command=self.activity).grid(row=len(self.device_list) + 3, column=1)
+        button_activity = Button(self.root, text="应用列表", command=self.activity)
+        button_activity.grid(row=len(self.device_list) + 1, column=1)
+        self.cb_list.append(button_activity)
 
     def launch_button(self):
-        Button(self.root, text="启动应用", command=self.launch).grid(row=len(self.device_list) + 3, column=2)
+        button_launch = Button(self.root, text="启动应用", command=self.launch)
+        button_launch.grid(row=len(self.device_list) + 1, column=2)
+        self.cb_list.append(button_launch)
 
     def screenshot_button(self):
-        button_activity = Button(self.root, text="手机截图", command=self.screen)
-        button_activity.grid(row=len(self.device_list) + 2, column=5)
+        button_screenshot = Button(self.root, text="手机截图", command=self.screen)
+        button_screenshot.grid(row=len(self.device_list), column=5)
+        self.cb_list.append(button_screenshot)
 
     def clear_button(self):
         button_clear = Button(self.root, text="采集性能", command=self.perf)
-        button_clear.grid(row=len(self.device_list) + 4, column=1)
+        button_clear.grid(row=len(self.device_list) + 2, column=1)
+        self.cb_list.append(button_clear)
 
     def close_pref_button(self):
         button_clear = Button(self.root, text="关闭采集", command=self.off_perf)
-        button_clear.grid(row=len(self.device_list) + 4, column=2)
+        button_clear.grid(row=len(self.device_list) + 2, column=2)
+        self.cb_list.append(button_clear)
 
     def kill_button(self):
         button_kill = Button(self.root, text="杀掉应用", command=self.kill)
-        button_kill.grid(row=len(self.device_list) + 3, column=3)
+        button_kill.grid(row=len(self.device_list) + 1, column=3)
+        self.cb_list.append(button_kill)
 
     def check_button(self):
         button_check = Button(self.root, text="查看进程", command=self.check)
-        button_check.grid(row=len(self.device_list) + 3, column=4)
+        button_check.grid(row=len(self.device_list) + 1, column=4)
+        self.cb_list.append(button_check)
 
     def export_button(self):
         button_export = Button(self.root, text="导出日志", command=self.export)
-        button_export.grid(row=len(self.device_list) + 4, column=3)
+        button_export.grid(row=len(self.device_list) + 2, column=3)
+        self.cb_list.append(button_export)
 
     def close_output_button(self):
         button_export = Button(self.root, text="关闭导出", command=self.off_output)
-        button_export.grid(row=len(self.device_list) + 4, column=4)
+        button_export.grid(row=len(self.device_list) + 2, column=4)
+        self.cb_list.append(button_export)
 
     def monkey_button(self):
-        button_install = Button(self.root, text="设备信息", command=self.run)
-        button_install.grid(row=len(self.device_list) + 2, column=4)
+        button_monkey = Button(self.root, text="设备信息", command=self.run)
+        button_monkey.grid(row=len(self.device_list), column=4)
+        self.cb_list.append(button_monkey)
 
     def uninstall_button(self):
-        button_gdt = Button(self.root, text="一键卸载", command=self.uninstall)
-        button_gdt.grid(row=len(self.device_list) + 3, column=5)
+        button_uninstall = Button(self.root, text="一键卸载", command=self.uninstall)
+        button_uninstall.grid(row=len(self.device_list) + 1, column=5)
+        self.cb_list.append(button_uninstall)
 
     def input_text(self):
         entry_log = Entry(self.root, width=65, textvariable=self.path)
-        entry_log.grid(row=len(self.device_list) + 2, column=0, sticky='w')
-
-    def input_package(self):
-        package_log = Entry(self.root, width=65, textvariable=self.package_name)
-        package_log.grid(row=len(self.device_list) + 3, column=0, sticky='w')
+        entry_log.grid(row=len(self.device_list), column=0, sticky='w')
+        self.cb_list.append(entry_log)
 
     def get_apk_name(self):
         return self.path.get()
 
     def get_package_name(self):
-        return self.package_name.get()
+        return self.package_name.get().split()[0]
 
     def devices_list(self):
         selected_device_list = [i.get() for i in self.select_device_list if i.get()]
@@ -243,7 +291,6 @@ class APKTk:
 
     def install(self):
         apk_name = self.get_apk_name()
-        print(apk_name)
         for device in self.devices_list():
             threading.Thread(target=self.install_and_open, args=(device, apk_name)).start()
 
@@ -269,7 +316,6 @@ class APKTk:
 
     def kill(self):
         package_name = self.get_package_name()
-
         for device in self.devices_list():
             threading.Thread(target=self.kill_process, args=(device, package_name)).start()
 
@@ -304,9 +350,9 @@ class APKTk:
 if __name__ == '__main__':
     apkTk = APKTk()
     apkTk.mul_check_box()
+    apkTk.combobox_list()
     apkTk.input_text()
     apkTk.path_button()
-    apkTk.input_package()
     apkTk.install_button()
     apkTk.launch_button()
     apkTk.refresh_button()
