@@ -21,7 +21,7 @@ class APKTk:
         self.path = StringVar()
         self.path.set("请输入需要安装的apk完整路径")
         self.package_name = StringVar()
-        self.package_name.set("请输入app的包名")
+        self.package_name.set("请选择app的包名")
         self.select_device_list = []
         self.device_list = self.get_device_list()
         self.cb_list = []
@@ -85,7 +85,7 @@ class APKTk:
     @staticmethod
     def check_process(device_name, package_name):
         # 查看进程
-        if package_name == '' or package_name == '请输入app的包名':
+        if package_name == '' or package_name == '请选择app的包名':
             subprocess.call(f'tidevice --udid {device_name} ps')
         else:
             print(f"设备{device_name}的应用{package_name}当前进程信息：")
@@ -123,7 +123,7 @@ class APKTk:
     @staticmethod
     def get_device_list():
         res = subprocess.check_output("tidevice list")
-        device_list = [i[0:24] for i in res.decode().split('\n') if len(i) > 25]
+        device_list = [i[0:24] for i in res.decode('gbk').split('\n') if len(i) > 25]
         return device_list
 
     def mul_check_box(self):
@@ -132,7 +132,7 @@ class APKTk:
             for index, item in enumerate(self.device_list):
                 ios_mes = subprocess.check_output("tidevice --udid " + item + ' info | findstr '
                                                                               '"MarketName ProductVersion"',
-                                                  shell=True).decode() \
+                                                  shell=True).decode('gbk') \
                     .strip('\n').split('\n')
                 ios_market_name = ios_mes[0].split(':')[-1].strip()
                 ios_version = ios_mes[-1].split(':')[-1].strip()
