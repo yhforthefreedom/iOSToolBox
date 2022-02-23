@@ -26,6 +26,8 @@ class APKTk:
         self.device_list = self.get_device_list()
         self.cb_list = []
         self.package_3 = self.show_package()
+        self.perf_index = StringVar()
+        self.perf_index.set('请选择需要关注的性能指标,不选择代表关注全部指标')
 
     @staticmethod
     def install_and_open(device_name, file_path):
@@ -37,11 +39,14 @@ class APKTk:
         # 获取设备的具体信息
         subprocess.call(f"tidevice --udid {device_name} info")
 
-    @staticmethod
-    def collect_pref(device_name, package_name):
+    def collect_pref(self, device_name, package_name):
         # 采集性能
+        perf_index = self.perf_index.get()
         try:
-            subprocess.call(f"tidevice --udid {device_name} perf -B {package_name}")
+            if perf_index == '请选择需要关注的性能指标,不选择代表关注全部指标':
+                subprocess.call(f"tidevice --udid {device_name} perf -B {package_name}")
+            else:
+                subprocess.call(f"tidevice --udid {device_name} perf -o {perf_index} -B {package_name}")
         except KeyboardInterrupt:
             print("请重启ios工具箱")
 
@@ -54,6 +59,13 @@ class APKTk:
                 pid = re.findall(r'(\d+)', i)[-1]
                 subprocess.call('taskkill /T /F /PID %s' % pid, shell=True)
                 print('采集性能服务停止！')
+
+    def choose_perf(self):
+        values = ['cpu', 'memory', 'fps', 'gpu', 'network']
+        comboxlist_perf = ttk.Combobox(self.root, textvariable=self.perf_index, state='readonly', values=values,
+                                       width=62)
+        self.cb_list.append(comboxlist_perf)
+        comboxlist_perf.grid(row=len(self.device_list) + 3, column=0)
 
     @staticmethod
     def kill_process(device_name, package_name):
@@ -169,6 +181,7 @@ class APKTk:
         self.mul_check_box()
         self.package_3 = self.show_package()
         self.combobox_list()
+        self.choose_perf()
         self.input_text()
         self.path_button()
         self.install_button()
@@ -192,9 +205,6 @@ class APKTk:
             return packages
 
     def combobox_list(self):
-        the_label = tk.Label(self.root)
-        self.cb_list.append(the_label)
-        the_label.grid(row=len(self.device_list) + 1, sticky='w')
         comboxlist = ttk.Combobox(self.root, textvariable=self.package_name, state='readonly', values=self.package_3,
                                   width=62)
         self.cb_list.append(comboxlist)
@@ -232,12 +242,12 @@ class APKTk:
 
     def clear_button(self):
         button_clear = Button(self.root, text="采集性能", command=self.perf)
-        button_clear.grid(row=len(self.device_list) + 2, column=1)
+        button_clear.grid(row=len(self.device_list) + 3, column=1)
         self.cb_list.append(button_clear)
 
     def close_pref_button(self):
         button_clear = Button(self.root, text="关闭采集", command=self.off_perf)
-        button_clear.grid(row=len(self.device_list) + 2, column=2)
+        button_clear.grid(row=len(self.device_list) + 3, column=2)
         self.cb_list.append(button_clear)
 
     def kill_button(self):
@@ -252,12 +262,12 @@ class APKTk:
 
     def export_button(self):
         button_export = Button(self.root, text="导出日志", command=self.export)
-        button_export.grid(row=len(self.device_list) + 2, column=3)
+        button_export.grid(row=len(self.device_list) + 3, column=3)
         self.cb_list.append(button_export)
 
     def close_output_button(self):
         button_export = Button(self.root, text="关闭导出", command=self.off_output)
-        button_export.grid(row=len(self.device_list) + 2, column=4)
+        button_export.grid(row=len(self.device_list) + 3, column=4)
         self.cb_list.append(button_export)
 
     def monkey_button(self):
@@ -350,6 +360,7 @@ class APKTk:
 if __name__ == '__main__':
     apkTk = APKTk()
     apkTk.mul_check_box()
+    apkTk.choose_perf()
     apkTk.combobox_list()
     apkTk.input_text()
     apkTk.path_button()
