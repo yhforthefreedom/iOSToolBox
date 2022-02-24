@@ -9,6 +9,7 @@ import threading
 import time
 from tkinter import filedialog
 import subprocess
+from collections import Counter
 
 
 # tkinter制作界面
@@ -199,10 +200,13 @@ class APKTk:
         self.close_output_button()
 
     def show_package(self):
+        packages = []
         for i in self.device_list:
             res = subprocess.check_output(f"tidevice --udid {i} applist")
-            packages = [i for i in res.decode('gbk').split('\n')[:-1]]
-            return packages
+            for j in res.decode('gbk').split('\n')[:-1]:
+                packages.append(j)
+        c = dict(Counter(packages))
+        return [i for i in c.keys() if c[i] == len(self.device_list)]
 
     def combobox_list(self):
         comboxlist = ttk.Combobox(self.root, textvariable=self.package_name, state='readonly', values=self.package_3,
