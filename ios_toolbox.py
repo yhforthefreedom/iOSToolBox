@@ -1,7 +1,6 @@
 # coding:utf-8
 import json
 import os
-import random
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -43,13 +42,10 @@ class APKTk:
     def collect_pref(self, device_name, package_name):
         # 采集性能
         perf_index = self.perf_index.get()
-        try:
-            if perf_index == '请选择需要关注的性能指标,不选择代表关注全部指标':
-                subprocess.call(f"tidevice --udid {device_name} perf -B {package_name}")
-            else:
-                subprocess.call(f"tidevice --udid {device_name} perf -o {perf_index} -B {package_name}")
-        except KeyboardInterrupt:
-            print("请重启ios工具箱")
+        if perf_index == '请选择需要关注的性能指标,不选择代表关注全部指标':
+            subprocess.call(f"tidevice --udid {device_name} perf -B {package_name}")
+        else:
+            subprocess.call(f"tidevice --udid {device_name} perf -o {perf_index} -B {package_name}")
 
     @staticmethod
     def close_pref(device_name):
@@ -86,14 +82,11 @@ class APKTk:
     @staticmethod
     def screenshot(device_name):
         # 手机截图
-        if os.path.exists("D:/ios_screenshot"):
-            pass
-        else:
+        if not os.path.exists("D:/ios_screenshot"):
             os.mkdir("D:/ios_screenshot")
-        image = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-        random_str = str(random.randint(0, 100))
-        subprocess.call(f"tidevice --udid {device_name} screenshot D:/ios_screenshot/{image}_{random_str}.png")
-        print(f"设备{device_name}的截图已保存在D:/ios_screenshot目录下")
+        image = f'{str(time.strftime("%Y%m%d%H%M%S", time.localtime()))}_{device_name}.png'
+        subprocess.call(f"tidevice --udid {device_name} screenshot D:/ios_screenshot/{image}")
+        print(f"设备{device_name}的截图保存在D:/ios_screenshot目录的{image}")
 
     @staticmethod
     def check_process(device_name, package_name):
@@ -107,16 +100,11 @@ class APKTk:
     @staticmethod
     def output_log(device_name):
         # 导出缓存日志
-        if os.path.exists("D:/ios_log"):
-            pass
-        else:
+        if not os.path.exists("D:/ios_log"):
             os.mkdir("D:/ios_log")
-        try:
-            subprocess.call("tidevice --udid " + device_name + " syslog > D:/ios_log/" + str(
-                time.strftime("%Y%m%d%H%M%S", time.localtime())) + "_" + str(random.randint(0, 100)) + ".txt",
-                            shell=True)
-        except KeyboardInterrupt:
-            print("请重启ios工具箱")
+        log_name = f'{str(time.strftime("%Y%m%d%H%M%S", time.localtime()))}_{device_name}.txt'
+        subprocess.call(f"tidevice --udid {device_name} syslog > D:/ios_log/{log_name}", shell=True)
+        print(f"设备{device_name}的日志保存在D:/ios_log目录的{log_name}")
 
     @staticmethod
     def close_output_log(device_name):
