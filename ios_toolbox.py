@@ -129,7 +129,6 @@ class APKTk:
 
     def mul_check_box(self):
         try:
-            print("制作多选框", self.device_list)
             for index, item in enumerate(self.device_list):
                 ios_mes = subprocess.check_output("tidevice --udid " + item + ' info | findstr '
                                                                               '"MarketName ProductVersion"',
