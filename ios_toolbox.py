@@ -124,8 +124,11 @@ class APKTk:
     @staticmethod
     def get_device_list():
         res = subprocess.check_output("tidevice list")
-        device_list = [i[0:24] for i in res.decode('gbk').split('\n') if len(i) > 25]
-        return device_list
+        try:
+            device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')]
+            return device_list
+        except IndexError:
+            return []
 
     def mul_check_box(self):
         try:
