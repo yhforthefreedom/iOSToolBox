@@ -3,6 +3,7 @@
 
 ## 使用方法
    - python版本3.6+
+   - tidevice 0.6.4
    - 需要安装iTunes
    - pip install -U tidevice
    - 手机连上电脑后需信任此电脑
