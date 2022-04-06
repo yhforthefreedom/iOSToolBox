@@ -9,6 +9,7 @@ import time
 from tkinter import filedialog
 import subprocess
 from collections import Counter
+import shutil
 
 
 # tkinter制作界面
@@ -125,7 +126,7 @@ class APKTk:
     def get_device_list():
         res = subprocess.check_output("tidevice list")
         try:
-            device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')]
+            device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')[1:]]
             return device_list
         except IndexError:
             return []
@@ -188,15 +189,34 @@ class APKTk:
         self.uninstall_button()
         self.close_pref_button()
         self.close_output_button()
+        self.export_crash_button()
 
     def show_package(self):
         packages = []
         for i in self.device_list:
             res = subprocess.check_output(f"tidevice --udid {i} applist")
-            for j in res.decode('gbk').split('\n')[:-1]:
+            packages_list = res.decode('gbk').split('\n')[:-1]
+            for j in packages_list:
                 packages.append(j)
         c = dict(Counter(packages))
         return [i for i in c.keys() if c[i] == len(self.device_list)]
+
+    @staticmethod
+    def export_crash(device_name):
+        if not os.path.exists("D:/ios_log"):
+            os.mkdir("D:/ios_log")
+            if not os.path.exists(f'D:/ios_log/{device_name}'):
+                os.mkdir(f"D:/ios_log/{device_name}")
+        subprocess.call(f'tidevice --udid {device_name} crashreport --keep D:/ios_log/{device_name}')
+        today = str(time.strftime("%Y-%m-%d-%H%M", time.localtime()))
+        crash_list = os.listdir(f'D:/ios_log/{device_name}')
+        for i in crash_list:
+            if os.path.isfile(f'D:/ios_log/{device_name}/{i}'):
+                if today not in i:
+                    os.remove(f'D:/ios_log/{device_name}/{i}')
+            else:
+                shutil.rmtree(f'D:/ios_log/{device_name}/{i}')
+        print(f'设备{device_name}导出的崩溃日志保存在D:/ios_log/{device_name}')
 
     def combobox_list(self):
         comboxlist = ttk.Combobox(self.root, textvariable=self.package_name, state='readonly', values=self.package_3,
@@ -279,6 +299,11 @@ class APKTk:
         entry_log.grid(row=len(self.device_list), column=0, sticky='w')
         self.cb_list.append(entry_log)
 
+    def export_crash_button(self):
+        crash_button = Button(self.root, text="崩溃日志", command=self.crash)
+        crash_button.grid(row=len(self.device_list) + 3, column=5)
+        self.cb_list.append(crash_button)
+
     def get_apk_name(self):
         return self.path.get()
 
@@ -350,6 +375,10 @@ class APKTk:
         for device in self.devices_list():
             threading.Thread(target=self.uninstall_all, args=(device, package_name)).start()
 
+    def crash(self):
+        for device in self.devices_list():
+            threading.Thread(target=self.export_crash, args=(device,)).start()
+
 
 if __name__ == '__main__':
     apkTk = APKTk()
@@ -371,4 +400,5 @@ if __name__ == '__main__':
     apkTk.uninstall_button()
     apkTk.close_pref_button()
     apkTk.close_output_button()
+    apkTk.export_crash_button()
     apkTk.root.mainloop()
