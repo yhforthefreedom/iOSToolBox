@@ -125,6 +125,7 @@ class APKTk:
     @staticmethod
     def get_device_list():
         res = subprocess.check_output("tidevice list")
+        print(res.decode('gbk'))
         try:
             device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')[1:]]
             return device_list
