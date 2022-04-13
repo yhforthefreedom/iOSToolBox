@@ -10,6 +10,7 @@ from tkinter import filedialog
 import subprocess
 from collections import Counter
 import shutil
+from tidevice import Usbmux
 
 
 # tkinter制作界面
@@ -29,6 +30,15 @@ class APKTk:
         self.package_3 = self.show_package()
         self.perf_index = StringVar()
         self.perf_index.set('请选择需要关注的性能指标,不选择代表关注全部指标')
+
+    def watch(self):
+        for info in Usbmux().watch_device():
+            if info["MessageType"] == "Attached":
+                print(f'设备{info["Properties"]["SerialNumber"]}接入电脑USB')
+                self.refresh_data()
+            else:
+                print(f'设备ID:{info["DeviceID"]}断开电脑USB')
+                self.refresh_data()
 
     @staticmethod
     def install_and_open(device_name, file_path):
@@ -125,7 +135,6 @@ class APKTk:
     @staticmethod
     def get_device_list():
         res = subprocess.check_output("tidevice list")
-        print(res.decode('gbk'))
         try:
             device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')[1:]]
             return device_list
@@ -402,4 +411,10 @@ if __name__ == '__main__':
     apkTk.close_pref_button()
     apkTk.close_output_button()
     apkTk.export_crash_button()
+
+    def watch_ios():
+        apkTk.watch()
+    t = threading.Thread(target=watch_ios)
+    t.setDaemon(True)
+    t.start()
     apkTk.root.mainloop()
