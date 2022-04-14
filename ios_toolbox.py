@@ -232,7 +232,17 @@ class APKTk:
         comboxlist = ttk.Combobox(self.root, textvariable=self.package_name, state='readonly', values=self.package_3,
                                   width=62)
         self.cb_list.append(comboxlist)
+        comboxlist.bind("<<ComboboxSelected>>",
+                        lambda _: appinfo())
         comboxlist.grid(row=len(self.device_list) + 1, column=0)
+
+        def appinfo():
+            app = comboxlist.get().split()
+            name = ''
+            for i in app[1:]:
+                name += i
+            print(f'{name}的具体信息：')
+            subprocess.call(f'tidevice appinfo {app[0]}')
 
     def path_button(self):
         button_path = Button(self.root, text="选择文件", command=self.select_path)
