@@ -42,6 +42,6 @@
 ## 拓展
    - 如果需要拓展功能,编写完代码后在项目目录下的终端窗口输入下面命令进行打包
    ```python
-pyinstaller -F ios_toolbox.py
+pyinstaller -F main.py
 ```
    - 打包成功后会在当前目录下生成dist文件,其中exe文件就在该文件夹下
