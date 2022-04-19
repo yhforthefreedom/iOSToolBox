@@ -4,6 +4,7 @@ import subprocess
 from collections import Counter
 import shutil
 import re
+from loguru import logger
 
 
 def install_and_open(device_name, file_path):
@@ -31,7 +32,7 @@ def close_pref(device_name):
         if device_name in i:
             pid = re.findall(r'(\d+)', i)[-1]
             subprocess.call('taskkill /T /F /PID %s' % pid, shell=True)
-            print('采集性能服务停止！')
+            logger.info('采集性能服务停止！')
 
 
 def kill_process(device_name, package_name):
@@ -41,11 +42,12 @@ def kill_process(device_name, package_name):
 
 def get_activity(device_name):
     # 获取设备已安装应用
-    print(f"设备{device_name}已安装应用：")
+    logger.info(f"设备{device_name}已安装应用：")
     subprocess.call(f"tidevice --udid {device_name} applist")
 
 
 def launch_app(device_name, package_name):
+    # 启动应用
     subprocess.call(f'tidevice --udid {device_name} launch {package_name}')
 
 
@@ -62,7 +64,7 @@ def check_process(device_name, package_name):
     if package_name == '' or package_name == '请选择app的包名':
         subprocess.call(f'tidevice --udid {device_name} ps')
     else:
-        print(f"设备{device_name}的应用{package_name}当前进程信息：")
+        logger.info(f"设备{device_name}的应用{package_name}当前进程信息：")
         subprocess.call(f"tidevice --udid {device_name} ps | findstr {package_name}", shell=True)
 
 
@@ -72,7 +74,7 @@ def output_log(device_name):
         os.mkdir("D:/ios_log")
     log_name = f'{str(time.strftime("%Y%m%d%H%M%S", time.localtime()))}_{device_name}.txt'
     subprocess.call(f"tidevice --udid {device_name} syslog > D:/ios_log/{log_name}", shell=True)
-    print(f"设备{device_name}的日志保存在D:/ios_log目录的{log_name}")
+    logger.info(f"设备{device_name}的日志保存在D:/ios_log目录的{log_name}")
 
 
 def close_output_log(device_name):
@@ -82,7 +84,7 @@ def close_output_log(device_name):
         if device_name in i:
             pid = re.findall(r'(\d+)', i)[-1]
             subprocess.call('taskkill /T /F /PID %s' % pid, shell=True)
-            print('日志导出服务停止！,请在D:/ios_log查看')
+            logger.info('日志导出服务停止！,请在D:/ios_log查看')
 
 
 def uninstall_all(device_name, package_name):
@@ -91,6 +93,7 @@ def uninstall_all(device_name, package_name):
 
 
 def get_device_list():
+    # 获取在线设备
     res = subprocess.check_output("tidevice list")
     try:
         device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')[1:]]
@@ -100,6 +103,7 @@ def get_device_list():
 
 
 def show_package():
+    # 获取应用列表
     packages = []
     device_list = get_device_list()
     for i in device_list:
@@ -112,6 +116,7 @@ def show_package():
 
 
 def export_crash(device_name):
+    # 导出crash文件
     if not os.path.exists("D:/ios_log"):
         os.mkdir("D:/ios_log")
         if not os.path.exists(f'D:/ios_log/{device_name}'):
@@ -125,4 +130,4 @@ def export_crash(device_name):
                 os.remove(f'D:/ios_log/{device_name}/{i}')
         else:
             shutil.rmtree(f'D:/ios_log/{device_name}/{i}')
-    print(f'设备{device_name}导出的崩溃日志保存在D:/ios_log/{device_name}')
+    logger.info(f'设备{device_name}导出的崩溃日志保存在D:/ios_log/{device_name}')

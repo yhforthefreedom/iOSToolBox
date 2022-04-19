@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tidevice import Usbmux
 from adb_threading.adbThreading import *
+from loguru import logger
 
 
 # tkinter制作界面
@@ -29,15 +30,15 @@ class APKTk:
     def watch(self):
         for info in Usbmux().watch_device():
             if info["MessageType"] == "Attached":
-                print(f'设备{info["Properties"]["SerialNumber"]}接入电脑USB')
+                logger.info(f'设备{info["Properties"]["SerialNumber"]}接入电脑USB')
                 self.refresh_data()
             else:
-                print(f'设备ID:{info["DeviceID"]}断开电脑USB')
+                logger.info(f'设备ID:{info["DeviceID"]}断开电脑USB')
                 self.refresh_data()
 
     # 刷新设备列表
     def refresh_data(self):
-        print("重新获取设备信息")
+        logger.info("重新获取设备信息")
         for item in self.cb_list:
             item.destroy()
         self.cb_list = []
@@ -77,7 +78,7 @@ class APKTk:
             name = ''
             for i in app[1:]:
                 name += i
-            print(f'{name}的具体信息：')
+            logger.info(f'{name}的具体信息：')
             subprocess.call(f'tidevice appinfo {app[0]}')
 
     def mul_check_box(self):
@@ -207,7 +208,7 @@ class APKTk:
 
     def devices_list(self):
         selected_device_list = [i.get() for i in self.select_device_list if i.get()]
-        print(selected_device_list)
+        logger.info(selected_device_list)
         return selected_device_list
 
     def mainloop(self):
@@ -216,6 +217,14 @@ class APKTk:
 
 if __name__ == '__main__':
     apkTk = APKTk()
+
+    def watch_ios():
+        apkTk.watch()
+
+
+    t = threading.Thread(target=watch_ios)
+    t.setDaemon(True)
+    t.start()
     apkTk.mul_check_box()
     apkTk.choose_perf()
     apkTk.combobox_list()
@@ -235,13 +244,4 @@ if __name__ == '__main__':
     apkTk.close_pref_button()
     apkTk.close_output_button()
     apkTk.export_crash_button()
-
-
-    def watch_ios():
-        apkTk.watch()
-
-
-    t = threading.Thread(target=watch_ios)
-    t.setDaemon(True)
-    t.start()
     apkTk.root.mainloop()
