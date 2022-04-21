@@ -1,12 +1,13 @@
 # coding:utf-8
+from adb_tools.tools import *
 import json
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from tidevice import Usbmux
-from adb_threading.adbThreading import *
 from loguru import logger
+import threading
 
 
 # tkinter制作界面
@@ -15,7 +16,7 @@ class APKTk:
     def __init__(self):
         self.root = Tk()
         self.root.geometry('800x200')
-        self.root.title("ios工具箱    作者:Tsissan    QQ:834528842")
+        self.root.title("iOS工具箱    作者:Tsissan    QQ:834528842")
         self.path = StringVar()
         self.path.set("请输入需要安装的apk完整路径")
         self.package_name = StringVar()
@@ -125,7 +126,7 @@ class APKTk:
         self.cb_list.append(button_path)
 
     def install_button(self):
-        button_install = Button(self.root, text="安装APP", command=lambda: install(self.get_apk_name()))
+        button_install = Button(self.root, text="安装APP", command=self.install)
         button_install.grid(row=len(self.device_list), column=2)
         self.cb_list.append(button_install)
 
@@ -135,58 +136,57 @@ class APKTk:
         self.cb_list.append(button_refresh)
 
     def activity_button(self):
-        button_activity = Button(self.root, text="应用列表", command=activity)
+        button_activity = Button(self.root, text="应用列表", command=self.activity)
         button_activity.grid(row=len(self.device_list) + 1, column=1)
         self.cb_list.append(button_activity)
 
     def launch_button(self):
-        button_launch = Button(self.root, text="启动应用", command=lambda: launch(self.get_package_name()))
+        button_launch = Button(self.root, text="启动应用", command=self.launch)
         button_launch.grid(row=len(self.device_list) + 1, column=2)
         self.cb_list.append(button_launch)
 
     def screenshot_button(self):
-        button_screenshot = Button(self.root, text="手机截图", command=screen)
+        button_screenshot = Button(self.root, text="手机截图", command=self.screen)
         button_screenshot.grid(row=len(self.device_list), column=5)
         self.cb_list.append(button_screenshot)
 
     def clear_button(self):
-        button_clear = Button(self.root, text="采集性能", command=lambda: perf(self.get_package_name(),
-                                                                           self.perf_index.get()))
+        button_clear = Button(self.root, text="采集性能", command=self.perf)
         button_clear.grid(row=len(self.device_list) + 3, column=1)
         self.cb_list.append(button_clear)
 
     def close_pref_button(self):
-        button_clear = Button(self.root, text="关闭采集", command=off_perf)
+        button_clear = Button(self.root, text="关闭采集", command=self.off_perf)
         button_clear.grid(row=len(self.device_list) + 3, column=2)
         self.cb_list.append(button_clear)
 
     def kill_button(self):
-        button_kill = Button(self.root, text="杀掉应用", command=lambda: kill(self.get_package_name()))
+        button_kill = Button(self.root, text="杀掉应用", command=self.kill)
         button_kill.grid(row=len(self.device_list) + 1, column=3)
         self.cb_list.append(button_kill)
 
     def check_button(self):
-        button_check = Button(self.root, text="查看进程", command=lambda: check(self.get_package_name()))
+        button_check = Button(self.root, text="查看进程", command=self.check)
         button_check.grid(row=len(self.device_list) + 1, column=4)
         self.cb_list.append(button_check)
 
     def export_button(self):
-        button_export = Button(self.root, text="导出日志", command=export)
+        button_export = Button(self.root, text="导出日志", command=self.export)
         button_export.grid(row=len(self.device_list) + 3, column=3)
         self.cb_list.append(button_export)
 
     def close_output_button(self):
-        button_export = Button(self.root, text="关闭导出", command=off_output)
+        button_export = Button(self.root, text="关闭导出", command=self.off_output)
         button_export.grid(row=len(self.device_list) + 3, column=4)
         self.cb_list.append(button_export)
 
     def monkey_button(self):
-        button_monkey = Button(self.root, text="设备信息", command=run)
+        button_monkey = Button(self.root, text="设备信息", command=self.run)
         button_monkey.grid(row=len(self.device_list), column=4)
         self.cb_list.append(button_monkey)
 
     def uninstall_button(self):
-        button_uninstall = Button(self.root, text="一键卸载", command=lambda: uninstall(self.get_package_name()))
+        button_uninstall = Button(self.root, text="一键卸载", command=self.uninstall)
         button_uninstall.grid(row=len(self.device_list) + 1, column=5)
         self.cb_list.append(button_uninstall)
 
@@ -196,7 +196,7 @@ class APKTk:
         self.cb_list.append(entry_log)
 
     def export_crash_button(self):
-        crash_button = Button(self.root, text="崩溃日志", command=crash)
+        crash_button = Button(self.root, text="崩溃日志", command=self.crash)
         crash_button.grid(row=len(self.device_list) + 3, column=5)
         self.cb_list.append(crash_button)
 
@@ -208,11 +208,72 @@ class APKTk:
 
     def devices_list(self):
         selected_device_list = [i.get() for i in self.select_device_list if i.get()]
-        logger.info(selected_device_list)
+        print(selected_device_list)
         return selected_device_list
 
     def mainloop(self):
         self.root.mainloop()
+
+    def install(self):
+        apk_name = self.get_apk_name()
+        for device in self.devices_list():
+            threading.Thread(target=install_and_open, args=(device, apk_name)).start()
+
+    def run(self):
+        for device in self.devices_list():
+            threading.Thread(target=package_info, args=(device,)).start()
+
+    def launch(self):
+        package_name = self.get_package_name()
+
+        for device in self.devices_list():
+            threading.Thread(target=launch_app, args=(device, package_name)).start()
+
+    def perf(self):
+        package_name = self.get_package_name()
+        perf_index = self.perf_index.get()
+        for device in self.devices_list():
+            threading.Thread(target=collect_pref, args=(device, package_name, perf_index)).start()
+
+    def off_perf(self):
+        for device in self.devices_list():
+            threading.Thread(target=close_pref, args=(device,)).start()
+
+    def kill(self):
+        package_name = self.get_package_name()
+        for device in self.devices_list():
+            threading.Thread(target=kill_process, args=(device, package_name)).start()
+
+    def activity(self):
+        for device in self.devices_list():
+            threading.Thread(target=get_activity, args=(device,)).start()
+
+    def screen(self):
+        for device in self.devices_list():
+            threading.Thread(target=screenshot, args=(device,)).start()
+
+    def check(self):
+        package_name = self.get_package_name()
+
+        for device in self.devices_list():
+            threading.Thread(target=check_process, args=(device, package_name)).start()
+
+    def export(self):
+        for device in self.devices_list():
+            threading.Thread(target=output_log, args=(device,)).start()
+
+    def off_output(self):
+        for device in self.devices_list():
+            threading.Thread(target=close_output_log, args=(device,)).start()
+
+    def uninstall(self):
+        package_name = self.get_package_name()
+        for device in self.devices_list():
+            threading.Thread(target=uninstall_all, args=(device, package_name)).start()
+
+    def crash(self):
+        for device in self.devices_list():
+            threading.Thread(target=export_crash, args=(device,)).start()
 
 
 if __name__ == '__main__':

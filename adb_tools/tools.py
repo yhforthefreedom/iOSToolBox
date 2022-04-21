@@ -96,7 +96,8 @@ def get_device_list():
     # 获取在线设备
     res = subprocess.check_output("tidevice list")
     try:
-        device_list = [i.split()[0] for i in res.decode('gbk').strip().split('\n')[1:]]
+        online_devices = res.decode('gbk')
+        device_list = [i.split()[0] for i in online_devices.strip().split('\n')[1:]]
         return device_list
     except IndexError:
         return []
